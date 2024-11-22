@@ -218,18 +218,20 @@ function App() {
           )}
 
           {/* 詞語解釋 */}
-          <div
-            className="flex-1 p-4 border border-gray-300 rounded bg-white 
+          {result.length > 0 && (
+            <div
+              className="flex-1 p-4 border border-gray-300 rounded bg-white 
               transition-all duration-300 hover:shadow-xl ease-in-out"
-          >
-            {result.length > 0 && focusWord && focusIdx != -1
-              ? result[focusIdx].word +
-                " 對問診回答的影響度：" +
-                result[focusIdx].weight +
-                "。" +
-                result[focusIdx].response
-              : "請等待或點擊已分析完成的詞語查看解釋。"}
-          </div>
+            >
+              {focusWord && focusIdx != -1
+                ? result[focusIdx].word +
+                  " 對問診回答的影響度：" +
+                  result[focusIdx].weight +
+                  "。" +
+                  result[focusIdx].response
+                : "請等待或點擊已分析完成的詞語查看解釋。"}
+            </div>
+          )}
         </div>
 
         {/* 模型回答 */}
