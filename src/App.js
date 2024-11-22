@@ -7,6 +7,9 @@ function App() {
   const [inputValue, setInputValue] = useState("张某，男，27岁。患者因昨晚饮酒发热，喝凉水数杯，早晨腹痛腹泻，大便如水色黄，腹中辘辘有声，恶心欲吐，胸中满闷不舒，口干欲冷饮，舌质红、苔白腻，脉沉细数。给出中医诊断和处方建议。");
   // 于某，男，62岁。患冠心病两年，服西药治疗，一日三次，从未有断，然胸憋心悸，一直不止。近月余，每至夜则咳嗽哮喘，痰涎清稀如水，倚息不能平卧，胸憋心悸尤甚。白昼则症状减轻。询知腰脊酸困，背畏风寒，时眩晕，手足心微热，口渴欲饮，但不多饮，亦不思冷，纳便尚可，舌尖略红，苔白腻，脉沉缓。给出中医诊断和处方建议。
 
+  const [hoveredWord, setHoveredWord] = useState(null); // 保存懸浮的詞語
+  const [clickedWord, setClickedWord] = useState(null); // 保存點擊的詞語
+
   let controller; // 用於控制請求
 
   async function simpleAsk() {
@@ -78,6 +81,9 @@ function App() {
                   try {
                       const data = JSON.parse(line);
                       console.log("Parsed data:", data);
+                      let newResult = result;
+                      newResult.push(data);
+                      setResult(newResult);
                   } catch (err) {
                       console.error("Failed to parse JSON:", err, "Line:", line);
                   }
@@ -106,6 +112,20 @@ function App() {
     }
   }
 
+  const handleMouseEnter = (word) => {
+    setHoveredWord(word); // 設置懸浮的詞語
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredWord(null); // 清除懸浮狀態
+  };
+
+  const handleClick = (word) => {
+    setClickedWord(word); // 設置點擊的詞語
+    console.log(`你點擊了: ${word}`);
+    // 在這裡可以執行其他操作，例如調用 API 或更新狀態
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
       <h1 className="text-2xl font-bold mb-4">中醫藥大語言模型可解釋分析系統</h1>
@@ -133,11 +153,40 @@ function App() {
         {waiting && askMode === 'simple' && (
           <h2 className="text-xl text-blue-500">拼命為您診斷中...</h2>
         )}
+
+        {result.length>0 && askMode=='full' && (<>
+          <h2 className="text-xl text-blue-500">您的初始提問：</h2>
+          <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
+            {result[0].words.map((word, index) => (
+              <span
+                key={index}
+                onMouseEnter={() => handleMouseEnter(word)}
+                onMouseLeave={handleMouseLeave}
+                onClick={() => handleClick(word)}
+                style={{
+                  marginRight: '8px',
+                  padding: '4px',
+                  cursor: 'pointer',
+                  borderRadius: '4px',
+                  backgroundColor: hoveredWord === word ? '#f0f0f0' : 'transparent', // 懸浮時改變背景色
+                  color: clickedWord === word ? '#007bff' : '#000', // 點擊後改變字體顏色
+                  textDecoration: hoveredWord === word ? 'underline' : 'none', // 懸浮時添加下劃線
+                }}
+              >
+                {word}
+              </span>
+            ))}
+          </div>
+        </>)}
         {result.length > 0 && (<>
           <h2 className="text-xl text-blue-500">中醫藥模型回答：</h2>
-          {askMode === 'simple' && (
+          {askMode === 'simple' ? (
             <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
               {result[0]}
+            </div>
+          ):(
+            <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
+              {result[0].o_response}
             </div>
           )}
         </>)}
