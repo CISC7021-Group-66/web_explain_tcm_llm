@@ -85,7 +85,6 @@ function App() {
               const data = JSON.parse(line);
               console.log("Parsed data:", data);
               setResult((prevItems) => [...prevItems, data]);
-              console.log("result", result);
             } catch (err) {
               console.error("Failed to parse JSON:", err, "Line:", line);
             }
@@ -148,7 +147,7 @@ function App() {
         中醫藥大語言模型可解釋分析系統
       </h1>
 
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-[50rem]">
         <h2 className="text-xl text-blue-500">請在此輸入您的問題：</h2>
         {waiting ? (
           <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
@@ -175,23 +174,25 @@ function App() {
           <h2 className="text-xl text-blue-500">拼命為您診斷中...</h2>
         )}
 
-        {result.length > 0 && askMode == "full" && (
-          <>
-            {askMode == "full" ? (
-              <h2 className="text-xl text-blue-500">LIME分析結果：</h2>
-            ) : (
-              <h2 className="text-xl text-blue-500">您的初始提問：</h2>
-            )}
-            <div className="mb-4 p-4 border border-gray-300 rounded bg-white transition-all duration-300 hover:shadow-xl">
-              {result[0].words.map((word, index) => {
-                let wordIdx = findWeight(word); // 獲取詞語的索引
-                return (
-                  <span
-                    key={index}
-                    onMouseEnter={() => handleMouseEnter(word)}
-                    onMouseLeave={handleMouseLeave}
-                    onClick={() => handleClick(word)}
-                    className={`
+        {/* LIME分析結果 */}
+        {askMode == "full" ? (
+          <h2 className="text-xl text-blue-500">LIME分析結果：</h2>
+        ) : (
+          <h2 className="text-xl text-blue-500">您的初始提問：</h2>
+        )}
+        <div className="flex flex-row col-span-2">
+          {result.length > 0 && askMode == "full" && (
+            <div className="flex-1">
+              <div className="mb-4 p-4 border border-gray-300 rounded bg-white transition-all duration-300 hover:shadow-xl">
+                {result[0].words.map((word, index) => {
+                  let wordIdx = findWeight(word); // 獲取詞語的索引
+                  return (
+                    <span
+                      key={index}
+                      onMouseEnter={() => handleMouseEnter(word)}
+                      onMouseLeave={handleMouseLeave}
+                      onClick={() => handleClick(word)}
+                      className={`
                       cursor-pointer inline-block
                       mr-2 mb-2 p-1 rounded-md
                       ${clickedWord === word ? "text-2xl" : "text-base"}
@@ -209,27 +210,29 @@ function App() {
                       hover:text-xl hover:bg-gray-200 hover:text-blue-500 hover:font-bold hover:shadow-xl
                       transition-all duration-150
                     `}
-                  >
-                    {word}
-                  </span>
-                );
-              })}
+                    >
+                      {word}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
-          </>
-        )}
-        {/* 詞語解釋 */}
-        {result.length > 0 && focusWord && focusIdx != -1 && (
-          <div
-            className="mb-4 p-2 border border-gray-300 rounded bg-white 
-          transition-all duration-300 hover:shadow-xl ease-in-out"
-          >
-            {result[focusIdx].word +
-              " 的影響度：" +
-              result[focusIdx].weight +
-              "。" +
-              result[focusIdx].response}
-          </div>
-        )}
+          )}
+
+          {/* 詞語解釋 */}
+          {result.length > 0 && focusWord && focusIdx != -1 && (
+            <div
+              className="flex-1 p-4 border border-gray-300 rounded bg-white 
+              transition-all duration-300 hover:shadow-xl ease-in-out"
+            >
+              {result[focusIdx].word +
+                " 對問診回答的影響度：" +
+                result[focusIdx].weight +
+                "。" +
+                result[focusIdx].response}
+            </div>
+          )}
+        </div>
 
         {/* 模型回答 */}
         {result.length > 0 && (
