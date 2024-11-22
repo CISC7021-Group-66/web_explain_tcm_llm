@@ -1,7 +1,74 @@
 import { useState } from "react";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+} from "chart.js";
+
+// 註冊 Chart.js 模塊
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip);
+
+const ImpactChart = ({ words, weights }) => {
+  // 配置數據
+  const data = {
+    labels: words, // y 軸的詞語
+    datasets: [
+      {
+        label: "影響度",
+        data: weights, // 條形圖的數值
+        backgroundColor: "skyblue", // 條形顏色
+      },
+    ],
+  };
+
+  // 配置選項
+  const options = {
+    indexAxis: "y", // 將條形圖設置為水平
+    scales: {
+      x: {
+        beginAtZero: true, // x 軸從 0 開始
+        title: {
+          display: true, // 顯示 X 軸標題
+          text: "詞語對問診結果影響度(正負相關)", // 設置標題文本
+          font: {
+            size: 16, // 字體大小
+            weight: "bold", // 字體粗細
+          },
+        },
+      },
+      y: {
+        ticks: {
+          autoSkip: false, // 禁用自動跳過標籤
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false, // 隱藏圖例
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => `影響度: ${context.raw.toFixed(3)}`,
+        },
+      },
+    },
+    elements: {
+      bar: {
+        borderWidth: 1,
+      },
+    },
+  };
+
+  return <Bar data={data} options={options} />;
+};
 
 function App() {
   const [result, setResult] = useState([]);
+  const [chartData, setChartData] = useState([]);
   const [waiting, setWaiting] = useState(false);
   const [askMode, setMode] = useState("full"); // full or simple
   const [inputValue, setInputValue] = useState(
@@ -85,6 +152,12 @@ function App() {
               const data = JSON.parse(line);
               console.log("Parsed data:", data);
               setResult((prevItems) => [...prevItems, data]);
+              if ("word" in data) {
+                setChartData((prevItems) => [
+                  ...prevItems,
+                  { word: data.word, weight: data.weight },
+                ]);
+              }
             } catch (err) {
               console.error("Failed to parse JSON:", err, "Line:", line);
             }
@@ -136,10 +209,20 @@ function App() {
     });
   };
 
+  const sortChartData = (data) => {
+    let arr = data;
+    // 降序排序
+    arr.sort((a, b) => b.weight - a.weight);
+    return arr;
+  };
+
   let clickWordIdx = findWeight(clickedWord);
   let hoverWordIdx = findWeight(hoveredWord);
   let focusWord = hoveredWord ? hoveredWord : clickedWord;
   let focusIdx = hoveredWord ? hoverWordIdx : clickWordIdx;
+
+  let chartWordData = sortChartData(chartData).map((item) => item.word);
+  let chartWeightData = sortChartData(chartData).map((item) => item.weight);
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-100">
@@ -178,6 +261,14 @@ function App() {
         {askMode == "full" && (
           <h2 className="text-xl text-blue-500">LIME分析結果：</h2>
         )}
+
+        {/* 渲染影響度圖表 */}
+        {chartData.length > 0 && (
+          <div className="mb-4 p-2 rounded bg-white">
+            <ImpactChart words={chartWordData} weights={chartWeightData} />
+          </div>
+        )}
+
         <div className="flex flex-row col-span-2">
           {result.length > 0 && askMode == "full" && (
             <div className="flex-1">
