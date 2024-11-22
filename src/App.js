@@ -158,7 +158,8 @@ function App() {
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="mb-4 p-2 border border-gray-300 rounded resize w-full"
+            className="mb-4 p-2 border border-gray-300 rounded resize w-full
+            transition-all duration-300 hover:shadow-xl"
             placeholder="Enter your question"
             rows="5"
             cols="50"
@@ -218,8 +219,10 @@ function App() {
         )}
         {/* 詞語解釋 */}
         {result.length > 0 && focusWord && focusIdx != -1 && (
-          <div className="mb-4 p-2 border border-gray-300 rounded bg-white 
-          transition-all duration-300 hover:shadow-xl ease-in-out">
+          <div
+            className="mb-4 p-2 border border-gray-300 rounded bg-white 
+          transition-all duration-300 hover:shadow-xl ease-in-out"
+          >
             {result[focusIdx].word +
               " 的影響度：" +
               result[focusIdx].weight +
@@ -231,34 +234,36 @@ function App() {
         {/* 模型回答 */}
         {result.length > 0 && (
           <>
-            <h2 className="text-xl text-blue-500">中醫藥模型回答：</h2>
-            {askMode === "simple" ? (
-              <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
-                {result[0]}
-              </div>
-            ) : (
-              <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
-                {result[0].o_response}
-              </div>
-            )}
+            <h2 className="text-xl text-blue-500 ">中醫藥模型回答：</h2>
+            <div
+              className="mb-4 p-2 border border-gray-300 rounded bg-white
+              transition-all duration-300 hover:shadow-xl
+              "
+            >
+              {askMode === "simple" ? result[0] : result[0].o_response}
+            </div>
           </>
         )}
 
         <button
           onClick={() => simpleAsk()}
           disabled={waiting}
-          className={`p-2 text-white rounded w-full ${
-            waiting ? "bg-gray-500" : "bg-blue-500"
-          }`}
+          className={`
+            transition-all duration-300 hover:shadow-xl
+            p-2 text-white rounded w-full ${
+              waiting ? "bg-gray-500" : "bg-blue-500"
+            }`}
         >
           簡單提問
         </button>
         <button
           onClick={() => fetchStream()}
           disabled={waiting}
-          className={`p-2 text-white rounded w-full mt-2 ${
-            waiting ? "bg-gray-500" : "bg-blue-500"
-          }`}
+          className={`
+            transition-all duration-300 hover:shadow-xl
+            p-2 text-white rounded w-full mt-2 ${
+              waiting ? "bg-gray-500" : "bg-blue-500"
+            }`}
         >
           完整提問&分析
         </button>
