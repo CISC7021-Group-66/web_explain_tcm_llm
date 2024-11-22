@@ -2,6 +2,28 @@ import { useState } from "react";
 
 function App() {
   const [inputValue, setInputValue] = useState("张某，男，27岁。患者因昨晚饮酒发热，喝凉水数杯，早晨腹痛腹泻，大便如水色黄，腹中辘辘有声，恶心欲吐，胸中满闷不舒，口干欲冷饮，舌质红、苔白腻，脉沉细数。给出中医诊断和处方建议。");
+  // 于某，男，62岁。患冠心病两年，服西药治疗，一日三次，从未有断，然胸憋心悸，一直不止。近月余，每至夜则咳嗽哮喘，痰涎清稀如水，倚息不能平卧，胸憋心悸尤甚。白昼则症状减轻。询知腰脊酸困，背畏风寒，时眩晕，手足心微热，口渴欲饮，但不多饮，亦不思冷，纳便尚可，舌尖略红，苔白腻，脉沉缓。给出中医诊断和处方建议。
+
+  async function simpleAsk() {
+    try {
+      const response = await fetch("http://100.96.0.5:8000/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: inputValue }),
+      });
+  
+      // 檢查 HTTP 狀態碼
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      // 解析 JSON 響應
+      const result = await response.json();
+      console.log(result);
+    } catch (error) {
+      console.error("請求失敗:", error.message);
+    }
+  }
 
   async function fetchStream() {
     // 修改此處ip為server ip
@@ -65,10 +87,16 @@ function App() {
       />
 
       <button
-        onClick={() => fetchStream(inputValue)}
+        onClick={() => simpleAsk()}
         className="p-2 bg-blue-500 text-white rounded"
       >
-        完整提問
+        簡單提問
+      </button>
+      <button
+        onClick={() => fetchStream()}
+        className="p-2 bg-blue-500 text-white rounded"
+      >
+        完整提問&分析
       </button>
     </div>
   );
