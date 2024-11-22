@@ -14,7 +14,7 @@ function App() {
 
   let controller; // 用於控制請求
 
-  async function simpleAsk() {
+  const simpleAsk = async () => {
     try {
       setMode("simple");
       setResult([]);
@@ -39,9 +39,9 @@ function App() {
     } finally {
       setWaiting(false);
     }
-  }
+  };
 
-  async function fetchStream() {
+  const fetchStream = async () => {
     // 如果有舊的請求，先取消它
     if (controller) {
       controller.abort();
@@ -111,7 +111,7 @@ function App() {
       controller = null; // 請求完成或中止後清空 controller
       setWaiting(false);
     }
-  }
+  };
 
   const handleMouseEnter = (word) => {
     setHoveredWord(word); // 設置懸浮的詞語
@@ -175,10 +175,8 @@ function App() {
         )}
 
         {/* LIME分析結果 */}
-        {askMode == "full" ? (
+        {askMode == "full" && (
           <h2 className="text-xl text-blue-500">LIME分析結果：</h2>
-        ) : (
-          <h2 className="text-xl text-blue-500">您的初始提問：</h2>
         )}
         <div className="flex flex-row col-span-2">
           {result.length > 0 && askMode == "full" && (
@@ -220,18 +218,18 @@ function App() {
           )}
 
           {/* 詞語解釋 */}
-          {result.length > 0 && focusWord && focusIdx != -1 && (
-            <div
-              className="flex-1 p-4 border border-gray-300 rounded bg-white 
+          <div
+            className="flex-1 p-4 border border-gray-300 rounded bg-white 
               transition-all duration-300 hover:shadow-xl ease-in-out"
-            >
-              {result[focusIdx].word +
+          >
+            {result.length > 0 && focusWord && focusIdx != -1
+              ? result[focusIdx].word +
                 " 對問診回答的影響度：" +
                 result[focusIdx].weight +
                 "。" +
-                result[focusIdx].response}
-            </div>
-          )}
+                result[focusIdx].response
+              : "請等待或點擊已分析完成的詞語查看解釋。"}
+          </div>
         </div>
 
         {/* 模型回答 */}
@@ -259,6 +257,7 @@ function App() {
         >
           簡單提問
         </button>
+
         <button
           onClick={() => fetchStream()}
           disabled={waiting}
