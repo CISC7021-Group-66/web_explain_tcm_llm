@@ -137,13 +137,18 @@ function App() {
     });
   };
 
+  let clickWordIdx = findWeight(clickedWord);
+  let hoverWordIdx = findWeight(hoveredWord);
+  let focusWord = hoveredWord ? hoveredWord : clickedWord;
+  let focusIdx = hoveredWord ? hoverWordIdx : clickWordIdx;
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <h1 className="text-2xl font-bold mb-4">
+    <div className="min-h-screen flex flex-col items-center bg-gray-100">
+      <h1 className="text-2xl font-bold mb-4 mt-8">
         中醫藥大語言模型可解釋分析系統
       </h1>
 
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-lg">
         <h2 className="text-xl text-blue-500">請在此輸入您的問題：</h2>
         {waiting ? (
           <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
@@ -171,8 +176,12 @@ function App() {
 
         {result.length > 0 && askMode == "full" && (
           <>
-            <h2 className="text-xl text-blue-500">您的初始提問：</h2>
-            <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
+            {askMode == "full" ? (
+              <h2 className="text-xl text-blue-500">LIME分析結果：</h2>
+            ) : (
+              <h2 className="text-xl text-blue-500">您的初始提問：</h2>
+            )}
+            <div className="mb-4 p-4 border border-gray-300 rounded bg-white transition-all duration-300 hover:shadow-xl">
               {result[0].words.map((word, index) => {
                 let wordIdx = findWeight(word); // 獲取詞語的索引
                 return (
@@ -181,25 +190,24 @@ function App() {
                     onMouseEnter={() => handleMouseEnter(word)}
                     onMouseLeave={handleMouseLeave}
                     onClick={() => handleClick(word)}
-                    style={{
-                      margin: "12px",
-                      padding: "4px",
-                      cursor: "pointer",
-                      borderRadius: "4px",
-                      backgroundColor:
-                        hoveredWord === word
-                          ? "#f0f0f0"
-                          : clickedWord === word
-                          ? "#f0f0f0"
+                    className={`
+                      cursor-pointer inline-block
+                      mr-2 mb-2 p-1 rounded-md
+                      ${clickedWord === word ? "text-2xl" : "text-base"}
+                      ${clickedWord === word ? "text-blue-500" : "text-black"}
+                      ${clickedWord === word ? "font-bold" : "font-normal"}
+                      ${
+                        clickedWord === word
+                          ? "bg-gray-200"
                           : wordIdx != -1
-                          ? result[wordIdx].weight > 0 // TODO: 包含weight時更改背景色
-                            ? "green"
-                            : "red"
-                          : "transparent", // 懸浮時改變背景色
-                      color: clickedWord === word ? "#007bff" : "#000", // 點擊後改變字體顏色
-                      fontWeight: clickedWord === word ? "bold" : "normal", // 點擊後加粗字體
-                      // textDecoration: hoveredWord === word ? 'underline' : 'none', // 懸浮時添加下劃線
-                    }}
+                          ? result[wordIdx].weight > 0
+                            ? "bg-lime-200"
+                            : "bg-pink-200"
+                          : "null"
+                      }
+                      hover:text-xl hover:bg-gray-200 hover:text-blue-500 hover:font-bold hover:shadow-xl
+                      transition-all duration-150
+                    `}
                   >
                     {word}
                   </span>
@@ -209,15 +217,17 @@ function App() {
           </>
         )}
         {/* 詞語解釋 */}
-        {result.length > 0 && clickedWord && findWeight(clickedWord) != -1 && (
-          <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
-            {result[findWeight(clickedWord)].word +
+        {result.length > 0 && focusWord && focusIdx != -1 && (
+          <div className="mb-4 p-2 border border-gray-300 rounded bg-white 
+          transition-all duration-300 hover:shadow-xl ease-in-out">
+            {result[focusIdx].word +
               " 的影響度：" +
-              result[findWeight(clickedWord)].weight +
+              result[focusIdx].weight +
               "。" +
-              result[findWeight(clickedWord)].response}
+              result[focusIdx].response}
           </div>
         )}
+
         {/* 模型回答 */}
         {result.length > 0 && (
           <>
