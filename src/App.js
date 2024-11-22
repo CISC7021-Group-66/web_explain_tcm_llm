@@ -1,7 +1,9 @@
 import { useState } from "react";
 
 function App() {
+  const [result, setResult] = useState([]);
   const [waiting, setWaiting] = useState(false);
+  const [askMode, setMode] = useState('full'); // full or simple
   const [inputValue, setInputValue] = useState("张某，男，27岁。患者因昨晚饮酒发热，喝凉水数杯，早晨腹痛腹泻，大便如水色黄，腹中辘辘有声，恶心欲吐，胸中满闷不舒，口干欲冷饮，舌质红、苔白腻，脉沉细数。给出中医诊断和处方建议。");
   // 于某，男，62岁。患冠心病两年，服西药治疗，一日三次，从未有断，然胸憋心悸，一直不止。近月余，每至夜则咳嗽哮喘，痰涎清稀如水，倚息不能平卧，胸憋心悸尤甚。白昼则症状减轻。询知腰脊酸困，背畏风寒，时眩晕，手足心微热，口渴欲饮，但不多饮，亦不思冷，纳便尚可，舌尖略红，苔白腻，脉沉缓。给出中医诊断和处方建议。
 
@@ -9,21 +11,24 @@ function App() {
 
   async function simpleAsk() {
     try {
+      setMode('simple');
+      setResult([]);
       setWaiting(true);
       const response = await fetch("http://100.96.0.5:8000/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: inputValue }),
       });
-  
+
       // 檢查 HTTP 狀態碼
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       // 解析 JSON 響應
       const result = await response.json();
-      console.log(result);
+      console.log(JSON.parse(result));
+      setResult([JSON.parse(result)]);
     } catch (error) {
       console.error("請求失敗:", error.message);
     } finally {
@@ -40,6 +45,8 @@ function App() {
     controller = new AbortController();
 
     try {
+      setResult([]);
+      setMode('full');
       setWaiting(true);
       // 修改此處ip為server ip
       const response = await fetch("http://100.96.0.5:8000/fullQuery", {
@@ -102,7 +109,9 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
       <h1 className="text-2xl font-bold mb-4">中醫藥大語言模型可解釋分析系統</h1>
+
       <div className="w-full max-w-md">
+        <h2 className="text-xl text-blue-500">請在此輸入您的問題：</h2>
         {waiting ? (
           <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
             {inputValue}
@@ -117,6 +126,21 @@ function App() {
             cols="50"
           />
         )}
+
+        {waiting && askMode === 'full' && (
+          <h2 className="text-xl text-blue-500">應用LIME算法計算中...請稍後，預計1min 30s</h2>
+        )}
+        {waiting && askMode === 'simple' && (
+          <h2 className="text-xl text-blue-500">拼命為您診斷中...</h2>
+        )}
+        {result.length > 0 && (<>
+          <h2 className="text-xl text-blue-500">中醫藥模型回答：</h2>
+          {askMode === 'simple' && (
+            <div className="mb-4 p-2 border border-gray-300 rounded bg-white">
+              {result[0]}
+            </div>
+          )}
+        </>)}
 
         <button
           onClick={() => simpleAsk()}
